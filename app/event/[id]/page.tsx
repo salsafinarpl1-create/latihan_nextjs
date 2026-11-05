@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link"; // <-- 1. Impor Link dari next/link
+import Link from "next/link";
 import { events, rupiah } from "@/data/events";
 import FormPesan from "@/components/FormPesan";
 import TombolFavorit from "@/components/TombolFavorit";
@@ -10,9 +10,15 @@ export default async function Detail({ params }: PageProps<"/event/[id]">) {
   if (!event) notFound();
 
   const sisa = event.kuota - event.terisi;
+
+  // Mencari event terkait (kategori sama, bukan event itu sendiri)
+  const eventTerkait = events.filter(
+    (e) => e.kategori === event.kategori && e.id !== event.id,
+  );
+
   return (
     <article className="rounded-xl border bg-white p-6">
-      {/* 2. Tambahkan tombol / teks tautan kembali ke katalog di bagian atas */}
+      {/* Tautan kembali ke katalog */}
       <Link
         href="/event"
         className="text-blue-600 underline text-sm inline-block mb-4"
@@ -34,6 +40,27 @@ export default async function Detail({ params }: PageProps<"/event/[id]">) {
 
       <TombolFavorit id={event.id} />
       <FormPesan event={event} />
+
+      {/* Bagian Event Terkait di bawah formulir */}
+      <div className="mt-8 border-t pt-4">
+        <h3 className="text-lg font-semibold mb-3">Event terkait</h3>
+        {eventTerkait.length === 0 ? (
+          <p className="text-slate-500">Belum ada event terkait.</p>
+        ) : (
+          <ul className="space-y-2">
+            {eventTerkait.map((e) => (
+              <li key={e.id}>
+                <Link
+                  href={`/event/${e.id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {e.judul}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </article>
   );
 }

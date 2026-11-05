@@ -34,6 +34,7 @@ export default function FormPesan({ event }: { event: Event }) {
       <h2 className="text-lg font-semibold">Pesan tiket</h2>
       <input
         value={nama}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onChange={(e: any) => setNama(e.target.value)}
         placeholder="Nama pemesan"
         className="block w-full rounded border px-3 py-2"
@@ -42,13 +43,15 @@ export default function FormPesan({ event }: { event: Event }) {
       <input
         type="email"
         value={email}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onChange={(e: any) => setEmail(e.target.value)}
         placeholder="Alamat email"
-        className="block w-full rounded border px-3 py-2"
+        className="blocnpk w-full rounded border px-3 py-2"
       />
       <input
         type="number"
         value={jumlah}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onChange={(e: any) => setJumlah(Number(e.target.value))}
         className="block w-32 rounded border px-3 py-2"
       />
