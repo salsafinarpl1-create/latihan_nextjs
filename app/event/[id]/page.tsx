@@ -1,36 +1,22 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { cookies } from "next/headers"; // 
-import { events, rupiah } from "@/data/events";
+import { cookies } from "next/headers";
+import { rupiah } from "@/data/events";
+import { ambilEvent } from "@/data/ambil";
 import FormPesan from "@/components/FormPesan";
 import TombolFavorit from "@/components/TombolFavorit";
+import EventTerkait from "@/components/EventTerkait";
 
 export default async function Detail({ params }: PageProps<"/event/[id]">) {
   const { id } = await params;
-  const event = events.find((e) => e.id === Number(id));
+  const event = await ambilEvent(Number(id));
   if (!event) notFound();
 
-
   const sisa = event.kuota - event.terisi;
-
-  const cookieStore = await cookies();
-  const namaAwal = cookieStore.get("nama")?.value ?? "";
-
-  const eventTerkait = events.filter(
-    (e) => e.kategori === event.kategori && e.id !== event.id,
-  );
-
+  const namaAwal = (await cookies()).get("nama")?.value ?? "";
   return (
     <article className="rounded-xl border bg-white p-6">
-      {/* Tautan kembali ke katalog */}
-      <Link
-        href="/event"
-        className="text-blue-600 underline text-sm inline-block mb-4"
-      >
-        ← Kembali ke katalog
-      </Link>
-
-      <span className="block w-max rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
+      <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
         {event.kategori}
       </span>
       <h1 className="mt-2 text-3xl font-bold">{event.judul}</h1>
@@ -41,32 +27,16 @@ export default async function Detail({ params }: PageProps<"/event/[id]">) {
       <p className="text-slate-600">
         Sisa {sisa} dari {event.kuota} tiket
       </p>
-
       <TombolFavorit id={event.id} />
-      
-      {/* Perbaikan: Mengirim prop namaAwal ke FormPesan dan menghapus duplikasi */}
       <FormPesan event={event} namaAwal={namaAwal} />
-
-      {/* Bagian Event Terkait di bawah formulir */}
-      <div className="mt-8 border-t pt-4">
-        <h3 className="text-lg font-semibold mb-3">Event terkait</h3>
-        {eventTerkait.length === 0 ? (
-          <p className="text-slate-500">Belum ada event terkait.</p>
-        ) : (
-          <ul className="space-y-2">
-            {eventTerkait.map((e) => (
-              <li key={e.id}>
-                <Link
-                  href={`/event/${e.id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {e.judul}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <section className="mt-6">
+        <h2 className="font-semibold">Event terkait</h2>
+        <Suspense
+          fallback={<p className="text-slate-400">Memuat event terkait...</p>}
+        >
+          <EventTerkait event={event} />
+        </Suspense>
+      </section>
     </article>
   );
 }
