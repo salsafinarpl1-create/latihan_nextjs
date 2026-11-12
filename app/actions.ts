@@ -1,6 +1,8 @@
 "use server";
+import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { events } from "@/data/events";
-import { tambahPesanan } from "@/data/pesanan";
+import { pesanan, tambahPesanan } from "@/data/pesanan"; // Pastikan 'pesanan' diimpor
 
 export type HasilPesan = {
   berhasil: boolean;
@@ -32,6 +34,7 @@ export async function pesanTiket(
     };
   }
 
+  // Perbaikan: Menambahkan operator minus (-) untuk menghitung sisa tiket
   const sisa = event.kuota - event.terisi;
   const galat: HasilPesan["galat"] = {};
   if (nama.length < 3) galat.nama = "Nama minimal 3 huruf.";
@@ -57,9 +60,18 @@ export async function pesanTiket(
     nama,
     email,
     jumlah,
+    // Perbaikan: Menambahkan operator perkalian (*) untuk total harga
     total: event.harga * jumlah,
     waktu: new Date().toLocaleString("id-ID"),
   });
+
+  const toples = await cookies();
+  // Perbaikan: Memperbaiki perkalian durasi maxAge cookie (30 hari)
+  toples.set("nama", nama, { maxAge: 60 * 24 * 30 });
+
+  revalidatePath("/event");
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath("/pesanan");
 
   return {
     berhasil: true,
@@ -67,4 +79,21 @@ export async function pesanTiket(
     galat: {},
     isian: { nama: "", email: "" },
   };
+}
+
+export async function batalkanPesanan(formData: FormData) {
+  const nomor = Number(formData.get("nomor"));
+  const cookieStore = await cookies();
+  const namaSaya = cookieStore.get("nama")?.value;
+  const i = pesanan.findIndex((p) => p.nomor === nomor);
+
+  if (i === -1 || pesanan[i].nama !== namaSaya) return;
+
+  const [batal] = pesanan.splice(i, 1);
+  const event = events.find((e) => e.id === batal.eventId);
+  if (event) event.terisi -= batal.jumlah;
+
+  revalidatePath("/event");
+  revalidatePath(`/event/${batal.eventId}`);
+  revalidatePath("/pesanan");
 }

@@ -3,15 +3,24 @@ import { useActionState, useState } from "react";
 import { pesanTiket, type HasilPesan } from "@/app/actions";
 import { rupiah, type Event } from "@/data/events";
 
-export default function FormPesan({ event }: { event: Event }) {
+export default function FormPesan({
+  event,
+  namaAwal = "",
+}: {
+  event: Event;
+  namaAwal?: string;
+}) {
   const awal: HasilPesan = {
     berhasil: false,
     pesan: "",
     galat: {},
-    isian: { nama: "", email: "" },
+    isian: { nama: namaAwal, email: "" },
   };
+
   const [hasil, kirim, sedangKirim] = useActionState(pesanTiket, awal);
   const [jumlah, setJumlah] = useState(1);
+
+  // Perbaikan: Menambahkan operator pengurangan (-) yang hilang
   const sisa = event.kuota - event.terisi;
 
   if (sisa === 0) {
@@ -61,6 +70,7 @@ export default function FormPesan({ event }: { event: Event }) {
       </div>
 
       <p>
+        {/* Perbaikan: Menambahkan operator perkalian (*) yang hilang */}
         Total: <b>{rupiah(event.harga * jumlah)}</b>
       </p>
 

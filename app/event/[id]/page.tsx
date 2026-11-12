@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers"; // 
 import { events, rupiah } from "@/data/events";
 import FormPesan from "@/components/FormPesan";
 import TombolFavorit from "@/components/TombolFavorit";
@@ -9,9 +10,12 @@ export default async function Detail({ params }: PageProps<"/event/[id]">) {
   const event = events.find((e) => e.id === Number(id));
   if (!event) notFound();
 
+
   const sisa = event.kuota - event.terisi;
 
-  // Mencari event terkait (kategori sama, bukan event itu sendiri)
+  const cookieStore = await cookies();
+  const namaAwal = cookieStore.get("nama")?.value ?? "";
+
   const eventTerkait = events.filter(
     (e) => e.kategori === event.kategori && e.id !== event.id,
   );
@@ -39,7 +43,9 @@ export default async function Detail({ params }: PageProps<"/event/[id]">) {
       </p>
 
       <TombolFavorit id={event.id} />
-      <FormPesan event={event} />
+      
+      {/* Perbaikan: Mengirim prop namaAwal ke FormPesan dan menghapus duplikasi */}
+      <FormPesan event={event} namaAwal={namaAwal} />
 
       {/* Bagian Event Terkait di bawah formulir */}
       <div className="mt-8 border-t pt-4">
