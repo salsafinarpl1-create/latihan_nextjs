@@ -15,7 +15,7 @@ export const pesanan: Pesanan[] = [];
 let nomorTerakhir = 0;
 
 export function tambahPesanan(data: Omit<Pesanan, "nomor">) {
-  nomorTerakhir == 1;
+  nomorTerakhir++; // Diubah menjadi increment agar nomor pesanan bertambah terus
   pesanan.unshift({ nomor: nomorTerakhir, ...data });
   return nomorTerakhir;
 }

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { pesanan } from "@/data/pesanan";
+import { pesanan, type Pesanan } from "@/data/pesanan";
 import { batalkanPesanan } from "../actions";
 
 export default async function HalamanPesanan() {
@@ -31,7 +31,7 @@ export default async function HalamanPesanan() {
           </tr>
         </thead>
         <tbody>
-          {daftarPesanan.map((p: any, index: number) => {
+          {daftarPesanan.map((p: Pesanan, index: number) => {
             // Cek apakah pesanan ini milik user yang sedang aktif berdasarkan cookie
             const adalahMilikSaya =
               namaCookie && p.nama.toLowerCase() === namaCookie.toLowerCase();
@@ -47,7 +47,7 @@ export default async function HalamanPesanan() {
                     </span>
                   )}
                 </td>
-                <td className="p-3">{p.judul ?? p.eventJudul ?? p.eventId}</td>
+                <td className="p-3">{p.judul}</td>
                 <td className="p-3">{p.jumlah}</td>
                 <td className="p-3">
                   {/* Tombol batalkan hanya muncul jika pesanan milik user yang sedang login */}
