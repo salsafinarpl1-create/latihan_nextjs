@@ -1,35 +1,30 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar"; // Sesuaikan dengan lokasi Navbar kamu
 
-const poppins = localFont({
-  src: [
-    { path: "./font/Poppins-Regular.ttf", weight: "400" },
-    { path: "./font/Poppins-Bold.ttf", weight: "700" },
-  ],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "EventKu", template: "%s · EventKu" },
-  description: "Katalog dan pemesanan tiket event sekolah",
+  title: "EventKu",
+  description: "Temukan event seru di sekolahmu",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="id" className="antialiased">
-      <body className={`${poppins.className} min-h-screen flex flex-col bg-slate-50 text-slate-800`}>
-        <Navbar />
-        <main className="mx-auto w-full max-w-5xl flex-1 p-6">
+    <html lang="id">
+      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
+        {/* Navbar dipasang di sini agar tampil di semua halaman */}
+        <Navbar /> 
+        
+        {/* Konten utama diberi padding/container agar ada jarak */}
+        <main className="mx-auto max-w-6xl px-4 py-8">
           {children}
         </main>
-        <footer className="border-t bg-white p-4 text-center text-sm text-slate-500">
-          EventKu · dibuat di kelas Junior Web Developer
-        </footer>
       </body>
     </html>
   );
