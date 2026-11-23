@@ -1,73 +1,83 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { pesanan, type Pesanan } from "@/data/pesanan";
-import { batalkanPesanan } from "../actions";
+import Link from "next/link";
+import { ambilPesanan } from "@/data/ambil";
+import { rupiah } from "@/data/events";
+import { batalkanPesanan } from "@/app/actions";
+
+export const metadata: Metadata = { title: "Daftar Pesanan" };
 
 export default async function HalamanPesanan() {
-  // Membaca cookie nama dengan await
-  const cookieStore = await cookies();
-  const namaCookie = cookieStore.get("nama")?.value;
-
-  const daftarPesanan = pesanan;
+  const pesanan = await ambilPesanan();
+  const namaSaya = (await cookies()).get("nama")?.value ?? "";
+  const totalTiket = pesanan.reduce((t, p) => t + p.jumlah, 0);
+  const pendapatan = pesanan.reduce((t, p) => t + p.total, 0);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Sapaan Halo, {nama}! (hanya jika cookie ada) */}
-      {namaCookie && (
-        <div className="mb-6 rounded-lg bg-blue-50 p-4 text-blue-800 font-medium">
-          Halo, {namaCookie}!
-        </div>
+    <div>
+      <h1 className="mb-2 text-2xl font-bold">Daftar Pesanan</h1>
+      {namaSaya && (
+        <p className="mb-2 text-slate-600">
+          Halo, {namaSaya}! Pesananmu ditandai &quot;Kamu&quot;.
+        </p>
       )}
-
-      <h1 className="text-2xl font-bold mb-4">Daftar Pesanan</h1>
-
-      {/* Tabel Pesanan */}
-      <table className="w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
-        <thead>
-          <tr className="bg-gray-100 border-b text-left text-sm text-gray-600">
-            <th className="p-3">Nama Pemesan</th>
-            <th className="p-3">Event</th>
-            <th className="p-3">Jumlah</th>
-            <th className="p-3">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {daftarPesanan.map((p: Pesanan, index: number) => {
-            // Cek apakah pesanan ini milik user yang sedang aktif berdasarkan cookie
-            const adalahMilikSaya =
-              namaCookie && p.nama.toLowerCase() === namaCookie.toLowerCase();
-
-            return (
-              <tr key={p.nomor ?? index} className="border-b hover:bg-gray-50">
-                <td className="p-3 flex items-center gap-2">
-                  <span>{p.nama}</span>
-                  {/* Label hijau "Kamu" bila cookie ada dan cocok */}
-                  {adalahMilikSaya && (
-                    <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                      Kamu
-                    </span>
-                  )}
-                </td>
-                <td className="p-3">{p.judul}</td>
-                <td className="p-3">{p.jumlah}</td>
-                <td className="p-3">
-                  {/* Tombol batalkan hanya muncul jika pesanan milik user yang sedang login */}
-                  {adalahMilikSaya && (
-                    <form action={batalkanPesanan}>
-                      <input type="hidden" name="nomor" value={p.nomor} />
-                      <button
-                        type="submit"
-                        className="text-red-600 text-sm underline hover:text-red-800"
-                      >
-                        Batalkan
-                      </button>
-                    </form>
-                  )}
-                </td>
+      {pesanan.length === 0 ? (
+        <p className="text-slate-500">
+          Belum ada pesanan.{" "}
+          <Link href="/event" className="text-blue-600 underline">
+            Pilih event
+          </Link>
+        </p>
+      ) : (
+        <>
+          <p className="mb-3 text-sm text-slate-500">
+            {pesanan.length} pesanan · {totalTiket} tiket · pendapatan{" "}
+            {rupiah(pendapatan)}
+          </p>
+          <table className="w-full rounded-xl border bg-white text-sm">
+            <thead className="bg-slate-100 text-left">
+              <tr>
+                <th className="p-2">#</th>
+                <th className="p-2">Event</th>
+                <th className="p-2">Pemesan</th>
+                <th className="p-2">Tiket</th>
+                <th className="p-2">Total</th>
+                <th className="p-2">Aksi</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {pesanan.map((p) => (
+                <tr key={p.nomor} className="border-t">
+                  <td className="p-2">{p.nomor}</td>
+                  <td className="p-2">
+                    {p.events?.judul ?? "(event dihapus)"}
+                  </td>
+                  <td className="p-2">
+                    {p.nama}
+                    {p.nama === namaSaya && (
+                      <span className="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">
+                        Kamu
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-2">{p.jumlah}</td>
+                  <td className="p-2">{rupiah(p.total)}</td>
+                  <td className="p-2">
+                    {p.nama === namaSaya && (
+                      <form action={batalkanPesanan}>
+                        <input type="hidden" name="nomor" value={p.nomor} />
+                        <button className="text-red-600 underline">
+                          Batalkan
+                        </button>
+                      </form>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }

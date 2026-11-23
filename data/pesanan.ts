@@ -1,12 +1,12 @@
 export type Pesanan = {
   nomor: number;
-  eventId: number;
-  judul: string;
+  event_id: number;
   nama: string;
   email: string;
   jumlah: number;
   total: number;
-  waktu: string;
+  dibuat: string;
+  events: { judul: string } | null;
 };
 
 // Disimpan di memori server: hilang setiap kali server dimatikan.
